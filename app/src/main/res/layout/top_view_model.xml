@@ -15,7 +15,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:cardBackgroundColor="#7F000000"
-            app:cardCornerRadius="10dp"
             android:layout_marginTop="15dp"
             >
 
@@ -47,7 +46,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:cardBackgroundColor="#7F000000"
-            app:cardCornerRadius="10dp"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="15dp"
             >

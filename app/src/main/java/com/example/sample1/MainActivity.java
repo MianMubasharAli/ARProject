@@ -319,19 +319,33 @@ public class MainActivity extends AppCompatActivity implements
 //        model.setRenderable(this.model2).animate(true).start();
         model.select();
 
+
+
       //  model.setLocalScale(new Vector3(0.0f, 1.0f, 0.0f));
         CardView cardHeart=viewRenderable.getView().findViewById(R.id.cardHeart);
-        cardHeart.setOnClickListener(new View.OnClickListener() {
+        CardView menuCard=viewRenderable.getView().findViewById(R.id.cardMenu);
+        menuCard.setOnClickListener(new View.OnClickListener() {
+            float i=0;
             @Override
             public void onClick(View view) {
-                model.setLocalRotation(Quaternion.axisAngle(new Vector3(1f, 0, 0), 90f));
-                Toast.makeText(MainActivity.this, "Heart clicked",Toast.LENGTH_LONG).show();
+                model.setLocalRotation(Quaternion.axisAngle(new Vector3(1f, 0, 0), i+10f));
+                i=i+10;
             }
         });
-        addNode(hitResult,model,viewRenderable,new Vector3(30.02f,-30.07f,-0.01f),new FixedHeightViewSizer(30),new FixedWidthViewSizer(25),"ViewRenderable 2");
-        addNode(hitResult,model,topViewModel,new Vector3(-3.02f, 18.01f, -0.01f),new FixedHeightViewSizer(25),new FixedWidthViewSizer(40),"ViewRenderable 2");
-        addNode(hitResult,model,rightViewModel,new Vector3(-36.02f, -29.01f, -0.01f),new FixedHeightViewSizer(30),new FixedWidthViewSizer(25),"ViewRenderable 2");
-        addNode(hitResult,model,sideViewModel,new Vector3(-13.02f, -20.41f, -0.01f),new FixedHeightViewSizer(20),new FixedWidthViewSizer(20),"ViewRenderable 2");
+
+        cardHeart.setOnClickListener(new View.OnClickListener() {
+            float i=0;
+            @Override
+            public void onClick(View view) {
+                model.setLocalRotation(Quaternion.axisAngle(new Vector3(0f, 1f, 0), i+10f));
+                i=i+10;
+//                Toast.makeText(MainActivity.this, "Heart clicked",Toast.LENGTH_LONG).show();
+            }
+        });
+        addNode(hitResult,model,viewRenderable,new Vector3(1.0f, 0.11f, 0.02f),new FixedHeightViewSizer(30),new FixedWidthViewSizer(25),"ViewRenderable 2");
+        addNode(hitResult,model,topViewModel,new Vector3(0.015f, 1.56f, 0.02f),new FixedHeightViewSizer(25),new FixedWidthViewSizer(40),"ViewRenderable 2");
+        addNode(hitResult,model,rightViewModel,new Vector3(-1.0f, 0.14f, 0.02f),new FixedHeightViewSizer(30),new FixedWidthViewSizer(25),"ViewRenderable 2");
+        addNode(hitResult,model,sideViewModel,new Vector3(-0.32f, 0.37f, 0.02f),new FixedHeightViewSizer(20),new FixedWidthViewSizer(20),"ViewRenderable 2");
 
 //        addNode(model,NORMALEHERZFREQUENZ,new Vector3(-23.02f, 20.01f, 0.01f),new FixedHeightViewSizer(20),new FixedWidthViewSizer(15),"ViewRenderable 2");
 //        addNode(model,MYOKARDINFARKT,new Vector3(-8.02f, 20.01f, 0.01f),new FixedHeightViewSizer(20),new FixedWidthViewSizer(15),"MYOKARDINFARKT");
@@ -371,14 +385,24 @@ public class MainActivity extends AppCompatActivity implements
 //        addNode(model,SIDE7,new Vector3(-13.82f, -4.11f, 0.01f),new FixedHeightViewSizer(20),new FixedWidthViewSizer(3),"ViewRenderable 2");
 
     }
-    public void addNode(HitResult hitResult,TransformableNode model, ViewRenderable viewRenderable,Vector3 vector3, FixedHeightViewSizer fixedHeightViewSizer,
+    public void addNode(HitResult hitResult,TransformableNode model1, ViewRenderable viewRenderable,Vector3 vector3, FixedHeightViewSizer fixedHeightViewSizer,
     FixedWidthViewSizer fixedWidthViewSizer,String nodeName){
+        Anchor anchor = hitResult.createAnchor();
+        AnchorNode anchorNode = new AnchorNode(anchor);
+        anchorNode.setParent(arFragment.getArSceneView().getScene());
+        TransformableNode model = new TransformableNode(arFragment.getTransformationSystem());
+
+        model.getScaleController().setMinScale(0.03f);
+        model.getScaleController().setMaxScale(0.04f);
+        model.setLocalScale(new Vector3(0.02f,0.07f,0.02f));
+        model.setLocalPosition(vector3);
+        model.setParent(anchorNode);
 
         Node titleNode = new Node();
-       titleNode.setParent(model);
-        titleNode.setRenderable(viewRenderable);
+       titleNode.setParent(anchorNode);
+        model.setRenderable(viewRenderable);
         titleNode.setName(nodeName);
-        titleNode.setLocalPosition(vector3);
+//        titleNode.setLocalPosition(vector3);
         titleNode.setEnabled(false);
         titleNode.setOnTouchListener(new Node.OnTouchListener() {
             @Override
@@ -392,7 +416,7 @@ public class MainActivity extends AppCompatActivity implements
 
         viewRenderable.setSizer(fixedHeightViewSizer);
      viewRenderable.setSizer(fixedWidthViewSizer);
-
+     viewRenderable.setShadowCaster(false);
         titleNode.setEnabled(true);
     }
 //    public void setClickListner(CardView cardView, Consumer consumer){

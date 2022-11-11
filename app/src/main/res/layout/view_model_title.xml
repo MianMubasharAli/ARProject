@@ -22,9 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:cardBackgroundColor="#7F000000"
-            app:cardCornerRadius="10dp"
-            android:layout_marginTop="15dp"
-
+            android:layout_marginTop="16dp"
             android:layout_marginBottom="60dp"
             >
 
@@ -38,13 +36,14 @@
                     android:id="@+id/textViewVORHOFFLIMMERN"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="10dp"
+                    android:layout_marginLeft="70dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="17dp"
                     android:layout_weight="1"
                     android:text="VORHOFFLIMMERN"
                     android:textColor="@color/white"
-                    android:textSize="30dp" />
+                    android:textAlignment="center"
+                    android:textSize="23dp" />
             </LinearLayout>
 
 
@@ -455,7 +454,7 @@
         </androidx.cardview.widget.CardView>
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="79dp"
             android:orientation="horizontal"
             android:layout_marginTop="10dp"
             >
