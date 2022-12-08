@@ -2,6 +2,9 @@ package com.example.sample1;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 //package com.google.ar.sceneform.samples.gltf;
@@ -10,8 +13,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,6 +54,7 @@ import com.google.ar.sceneform.ux.TransformableNode;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -61,6 +68,8 @@ public class MainActivity extends AppCompatActivity implements
         BaseArFragment.OnSessionConfigurationListener,
         ArFragment.OnViewCreatedListener {
 
+    private ImageButton heart;
+    private ImageButton lungs;
     private ArFragment arFragment;
     private Renderable model;
     private Renderable model2;
@@ -68,38 +77,41 @@ public class MainActivity extends AppCompatActivity implements
     private ViewRenderable topViewModel;
     private ViewRenderable rightViewModel;
     private  ViewRenderable sideViewModel;
-    private ViewRenderable NORMALEHERZFREQUENZ;
-    private ViewRenderable MYOKARDINFARKT;
-    private ViewRenderable ARTERIELLEHYPERTONIE;
-    private ViewRenderable VORHOFFLIMMERN;
-    private ViewRenderable ANSICHTEN;
-    private ViewRenderable MANWALK;
-    private ViewRenderable HEART;
-    private ViewRenderable MENU;
-    private ViewRenderable TON;
-    private ViewRenderable GREENHEART;
-    private ViewRenderable SIGNAL;
-    private ViewRenderable HUMAN;
-    private ViewRenderable MALEN;
-    private ViewRenderable PEN;
-    private ViewRenderable USB;
-    private  ViewRenderable OUTLINEDHEART;
-    private ViewRenderable EMPTY;
-    private ViewRenderable ELIGHUSTON;
-    private ViewRenderable HUMANGROUP;
-    private ViewRenderable DOTCIRCLE;
-    private  ViewRenderable FILLEDCIRCLE;
-    private  ViewRenderable CIRCLE;
-    private ViewRenderable BPCARD;
-    private ViewRenderable DETAILCARD;
-    private  ViewRenderable SIDE1;
-    private  ViewRenderable SIDE2;
-    private  ViewRenderable SIDE3;
-    private  ViewRenderable SIDE4;
-    private  ViewRenderable SIDE5;
-    private  ViewRenderable SIDE6;
-    private  ViewRenderable SIDE7;
-    TextView view1;
+    AnchorNode anchorNode;
+    Anchor anchor;
+    TransformableNode transformableNode;
+//    private ViewRenderable NORMALEHERZFREQUENZ;
+//    private ViewRenderable MYOKARDINFARKT;
+//    private ViewRenderable ARTERIELLEHYPERTONIE;
+//    private ViewRenderable VORHOFFLIMMERN;
+//    private ViewRenderable ANSICHTEN;
+//    private ViewRenderable MANWALK;
+//    private ViewRenderable HEART;
+//    private ViewRenderable MENU;
+//    private ViewRenderable TON;
+//    private ViewRenderable GREENHEART;
+//    private ViewRenderable SIGNAL;
+//    private ViewRenderable HUMAN;
+//    private ViewRenderable MALEN;
+//    private ViewRenderable PEN;
+//    private ViewRenderable USB;
+//    private  ViewRenderable OUTLINEDHEART;
+//    private ViewRenderable EMPTY;
+//    private ViewRenderable ELIGHUSTON;
+//    private ViewRenderable HUMANGROUP;
+//    private ViewRenderable DOTCIRCLE;
+//    private  ViewRenderable FILLEDCIRCLE;
+//    private  ViewRenderable CIRCLE;
+//    private ViewRenderable BPCARD;
+//    private ViewRenderable DETAILCARD;
+//    private  ViewRenderable SIDE1;
+//    private  ViewRenderable SIDE2;
+//    private  ViewRenderable SIDE3;
+//    private  ViewRenderable SIDE4;
+//    private  ViewRenderable SIDE5;
+//    private  ViewRenderable SIDE6;
+//    private  ViewRenderable SIDE7;
+//    TextView view1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +119,8 @@ public class MainActivity extends AppCompatActivity implements
 
 
         setContentView(R.layout.activity_main);
+        heart=(ImageButton) findViewById(R.id.heartButton);
+        lungs=(ImageButton) findViewById(R.id.lungsButton);
 
         getSupportFragmentManager().addFragmentOnAttachListener(this);
 
@@ -150,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements
         WeakReference<MainActivity> weakActivity = new WeakReference<>(this);
 
         ModelRenderable.builder()
-                .setSource(this, Uri.parse("models/model.glb"))
+                .setSource(this, Uri.parse("models/Diaphragm.glb"))
                 .setIsFilamentGltf(true)
                 .setAsyncLoadEnabled(true)
                 .build()
@@ -158,6 +172,22 @@ public class MainActivity extends AppCompatActivity implements
                     MainActivity activity = weakActivity.get();
                     if (activity != null) {
                         activity.model = model;
+                    }
+                })
+                .exceptionally(throwable -> {
+                    Toast.makeText(
+                            this, "Unable to load model", Toast.LENGTH_LONG).show();
+                    return null;
+                });
+        ModelRenderable.builder()
+                .setSource(this, Uri.parse("models/model.glb"))
+                .setIsFilamentGltf(true)
+                .setAsyncLoadEnabled(true)
+                .build()
+                .thenAccept(model -> {
+                    MainActivity activity = weakActivity.get();
+                    if (activity != null) {
+                        activity.model2 = model;
                     }
                 })
                 .exceptionally(throwable -> {
@@ -297,55 +327,60 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onTapPlane(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
-        if (model == null || viewRenderable == null ) {
+        if (model == null || viewRenderable == null || model2 == null) {
             Toast.makeText(this, "Loading...", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Create the Anchor.
-        Anchor anchor = hitResult.createAnchor();
-        AnchorNode anchorNode = new AnchorNode(anchor);
-        anchorNode.setParent(arFragment.getArSceneView().getScene());
+        this.anchor = hitResult.createAnchor();
+        this.anchorNode = new AnchorNode(this.anchor);
+        this.anchorNode.setParent(arFragment.getArSceneView().getScene());
 
         // Create the transformable model and add it to the anchor.
-        TransformableNode model = new TransformableNode(arFragment.getTransformationSystem());
+        this.transformableNode = new TransformableNode(arFragment.getTransformationSystem());
 
-        model.getScaleController().setMinScale(0.03f);
-        model.getScaleController().setMaxScale(0.04f);
-        model.setLocalScale(new Vector3(0.02f,0.07f,0.02f));
-        model.setLocalPosition(new Vector3(0.02f, 0.89f, 0.02f));
-        model.setParent(anchorNode);
-        model.setRenderable(this.model).animate(true).start();
-//        model.setRenderable(this.model2).animate(true).start();
-        model.select();
+        this.transformableNode.getScaleController().setMinScale(0.03f);
+        this.transformableNode.getScaleController().setMaxScale(0.04f);
+        this.transformableNode.setLocalScale(new Vector3(0.02f,0.07f,0.02f));
+        this.transformableNode.setLocalPosition(new Vector3(0.02f, 0.89f, 0.02f));
+        this.transformableNode.setParent(this.anchorNode);
+        this.transformableNode.setRenderable(this.model2).animate(true).start();
+        this.transformableNode.select();
 
-
-
-      //  model.setLocalScale(new Vector3(0.0f, 1.0f, 0.0f));
         CardView cardHeart=viewRenderable.getView().findViewById(R.id.cardHeart);
         CardView menuCard=viewRenderable.getView().findViewById(R.id.cardMenu);
-        menuCard.setOnClickListener(new View.OnClickListener() {
-            float i=0;
+        CardView cardSignal=viewRenderable.getView().findViewById(R.id.cardSignal);
+        ar_functionality ar=new ar_functionality();
+        ar.autoRotation(this.transformableNode,cardHeart,menuCard);
+        lungs.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                model.setLocalRotation(Quaternion.axisAngle(new Vector3(1f, 0, 0), i+10f));
-                i=i+10;
+                removeAndAddModel(hitResult,model,new Vector3(0.02f, -0.65f, 0.02f));
+                ar.autoRotation(transformableNode,cardHeart,menuCard);
             }
         });
 
-        cardHeart.setOnClickListener(new View.OnClickListener() {
-            float i=0;
+        heart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                model.setLocalRotation(Quaternion.axisAngle(new Vector3(0f, 1f, 0), i+10f));
-                i=i+10;
-//                Toast.makeText(MainActivity.this, "Heart clicked",Toast.LENGTH_LONG).show();
+                removeAndAddModel(hitResult, model2, new Vector3(0.02f, 0.89f, 0.02f));
+                ar.autoRotation(transformableNode,cardHeart,menuCard);
             }
         });
-        addNode(hitResult,model,viewRenderable,new Vector3(1.0f, 0.11f, 0.02f),new FixedHeightViewSizer(30),new FixedWidthViewSizer(25),"ViewRenderable 2");
-        addNode(hitResult,model,topViewModel,new Vector3(0.015f, 1.56f, 0.02f),new FixedHeightViewSizer(25),new FixedWidthViewSizer(40),"ViewRenderable 2");
-        addNode(hitResult,model,rightViewModel,new Vector3(-1.0f, 0.14f, 0.02f),new FixedHeightViewSizer(30),new FixedWidthViewSizer(25),"ViewRenderable 2");
-        addNode(hitResult,model,sideViewModel,new Vector3(-0.32f, 0.37f, 0.02f),new FixedHeightViewSizer(20),new FixedWidthViewSizer(20),"ViewRenderable 2");
+        cardSignal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                YoutubeLive youtubeLive= new YoutubeLive();
+//                youtubeLive.validateMobileLiveIntent(MainActivity.this);
+                validateMobileLiveIntent(MainActivity.this);
+            }
+        });
+
+        ar.addNode(hitResult,this.transformableNode,viewRenderable,new Vector3(1.0f, 0.11f, 0.02f),new FixedHeightViewSizer(30),new FixedWidthViewSizer(25),"ViewRenderable 2",arFragment);
+        ar.addNode(hitResult,this.transformableNode,topViewModel,new Vector3(0.015f, 1.56f, 0.02f),new FixedHeightViewSizer(25),new FixedWidthViewSizer(40),"ViewRenderable 2",arFragment);
+        ar.addNode(hitResult,this.transformableNode,rightViewModel,new Vector3(-1.0f, 0.14f, 0.02f),new FixedHeightViewSizer(30),new FixedWidthViewSizer(25),"ViewRenderable 2",arFragment);
+        ar.addNode(hitResult,this.transformableNode,sideViewModel,new Vector3(-0.32f, 0.37f, 0.02f),new FixedHeightViewSizer(20),new FixedWidthViewSizer(20),"ViewRenderable 2",arFragment);
 
 //        addNode(model,NORMALEHERZFREQUENZ,new Vector3(-23.02f, 20.01f, 0.01f),new FixedHeightViewSizer(20),new FixedWidthViewSizer(15),"ViewRenderable 2");
 //        addNode(model,MYOKARDINFARKT,new Vector3(-8.02f, 20.01f, 0.01f),new FixedHeightViewSizer(20),new FixedWidthViewSizer(15),"MYOKARDINFARKT");
@@ -385,51 +420,82 @@ public class MainActivity extends AppCompatActivity implements
 //        addNode(model,SIDE7,new Vector3(-13.82f, -4.11f, 0.01f),new FixedHeightViewSizer(20),new FixedWidthViewSizer(3),"ViewRenderable 2");
 
     }
-    public void addNode(HitResult hitResult,TransformableNode model1, ViewRenderable viewRenderable,Vector3 vector3, FixedHeightViewSizer fixedHeightViewSizer,
-    FixedWidthViewSizer fixedWidthViewSizer,String nodeName){
-        Anchor anchor = hitResult.createAnchor();
-        AnchorNode anchorNode = new AnchorNode(anchor);
-        anchorNode.setParent(arFragment.getArSceneView().getScene());
-        TransformableNode model = new TransformableNode(arFragment.getTransformationSystem());
 
-        model.getScaleController().setMinScale(0.03f);
-        model.getScaleController().setMaxScale(0.04f);
-        model.setLocalScale(new Vector3(0.02f,0.07f,0.02f));
-        model.setLocalPosition(vector3);
-        model.setParent(anchorNode);
 
-        Node titleNode = new Node();
-       titleNode.setParent(anchorNode);
-        model.setRenderable(viewRenderable);
-        titleNode.setName(nodeName);
-//        titleNode.setLocalPosition(vector3);
-        titleNode.setEnabled(false);
-        titleNode.setOnTouchListener(new Node.OnTouchListener() {
-            @Override
-            public boolean onTouch(HitTestResult hitTestResult, MotionEvent motionEvent) {
-                String name=hitTestResult.getNode().getName();
-                System.out.print("Node clicked "+name);
-                Toast.makeText(MainActivity.this, name, Toast.LENGTH_SHORT).show();
-                return true;
-            }
-        });
+public void removeAndAddModel(HitResult hitResult, Renderable renderable, Vector3 vector3){
+        this.anchor.detach();
+        this.anchor=hitResult.createAnchor();
+    this.anchorNode = new AnchorNode(this.anchor);
+    this.anchorNode.setParent(arFragment.getArSceneView().getScene());
+    // Create the transformable model and add it to the anchor.
+    this.transformableNode = new TransformableNode(arFragment.getTransformationSystem());
 
-        viewRenderable.setSizer(fixedHeightViewSizer);
-     viewRenderable.setSizer(fixedWidthViewSizer);
-     viewRenderable.setShadowCaster(false);
-        titleNode.setEnabled(true);
+    this.transformableNode.getScaleController().setMinScale(0.03f);
+    this.transformableNode.getScaleController().setMaxScale(0.04f);
+    this.transformableNode.setLocalScale(new Vector3(0.02f,0.07f,0.02f));
+    this.transformableNode.setLocalPosition(vector3);
+    this.transformableNode.setParent(this.anchorNode);
+    this.transformableNode.setRenderable(renderable).animate(true).start();
+    this.transformableNode.select();
+}
+
+    private boolean canResolveMobileLiveIntent(Context context) {
+        // in this method we are calling a youtube live  intent package name
+        // and we are checking if youtube live intent is present or not.
+        Intent intent = new Intent("com.google.android.youtube.intent.action.CREATE_LIVE_STREAM").setPackage("com.google.android.youtube");
+        PackageManager pm = context.getPackageManager();
+        List resolveInfo = pm.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+
+        // returning the result after checking
+        // the youtube live stream intent.
+        return resolveInfo != null && !resolveInfo.isEmpty();
     }
-//    public void setClickListner(CardView cardView, Consumer consumer){
-//        cardView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                consumer.accept(1);
-//            }
-//        });
-//    }
+
+    private void validateMobileLiveIntent(Context context) {
+        if (canResolveMobileLiveIntent(context)) {
+            // Launch the live stream Activity
+            startMobileLive(MainActivity.this);
+        } else {
+            // on below line displaying a toast message if the intent is not present.
+            Toast.makeText(context, "Please Update your Youtube app.", Toast.LENGTH_SHORT).show();
+            // Prompt user to install or upgrade the YouTube app
+        }
+    }
+
+    // method to create our intent for youtube live stream.
+    private Intent createMobileLiveIntent(Context context, String description) {
+
+        // on below line we are creating a new intent and we are setting package name to it.
+        Intent intent = new Intent("com.google.android.youtube.intent.action.CREATE_LIVE_STREAM").setPackage("com.google.android.youtube");
+
+        // on below line we are creating a new uri and setting
+        // a scheme to it and appending our path with our package name.
+        Uri referrer = new Uri.Builder()
+                .scheme("android-app")
+                .appendPath(context.getPackageName())
+                .build();
+        // on above line we are building our intent.
+        // on below line we are adding our referer
+        // and subject for our live video.
+        intent.putExtra(Intent.EXTRA_REFERRER, referrer);
+        if (!TextUtils.isEmpty(description)) {
+            intent.putExtra(Intent.EXTRA_SUBJECT, description);
+        }
+        // at last we are returning intent.
+        return intent;
+    }
+
+    private void startMobileLive(Context context) {
+
+        // calling a method to create an intent.
+        Intent mobileLiveIntent = createMobileLiveIntent(context, "Streaming via ...");
+
+        // on below line we are calling
+        // our activity to start stream
+        startActivity(mobileLiveIntent);
+    }
+
 //
-//    public void check(int i){
-//        Toast.makeText(MainActivity.this, "check is working: "+i,Toast.LENGTH_LONG).show();
-//    }
+
 
 }
